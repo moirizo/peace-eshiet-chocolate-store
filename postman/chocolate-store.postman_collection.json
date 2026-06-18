@@ -1,0 +1,473 @@
+{
+  "info": {
+    "name": "Peace-Eshiet Chocolate Store API",
+    "description": "Every endpoint of the Peace-Eshiet Chocolate Store API as plain, hardcoded requests (no variables, no scripts). Base URL is hardcoded to http://localhost:3000.\n\nDemo login -> username: demo, password: password123.\n\nFor the Cart / Orders / auth-me / auth-logout requests you must first run 'Auth > Login', copy the token from the response, and paste it into the Authorization header of those requests (replace PASTE_TOKEN_HERE).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/health",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["health"]
+            }
+          }
+        },
+        {
+          "name": "API index",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Chocolates",
+      "item": [
+        {
+          "name": "List chocolates (with filters)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/chocolates?type=dark&limit=5&sort=-price",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "chocolates"],
+              "query": [
+                { "key": "type", "value": "dark" },
+                { "key": "limit", "value": "5" },
+                { "key": "sort", "value": "-price" },
+                { "key": "page", "value": "1", "disabled": true },
+                { "key": "brand", "value": "Lindt", "disabled": true },
+                { "key": "origin", "value": "Switzerland", "disabled": true },
+                { "key": "minPrice", "value": "3", "disabled": true },
+                { "key": "maxPrice", "value": "8", "disabled": true },
+                { "key": "q", "value": "truffle", "disabled": true }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get chocolate by id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/chocolates/5",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "chocolates", "5"]
+            }
+          }
+        },
+        {
+          "name": "Create chocolate",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Sea Salt Dark 72%\",\n  \"brand\": \"Lindt\",\n  \"type\": \"dark\",\n  \"cacaoPercentage\": 72,\n  \"price\": 4.99,\n  \"stock\": 50,\n  \"origin\": \"Switzerland\",\n  \"description\": \"Dark chocolate with a hint of sea salt.\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/chocolates",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "chocolates"]
+            }
+          }
+        },
+        {
+          "name": "Replace chocolate (PUT)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Excellence 70% Dark (Updated)\",\n  \"brand\": \"Lindt\",\n  \"type\": \"dark\",\n  \"cacaoPercentage\": 70,\n  \"price\": 3.99,\n  \"stock\": 100,\n  \"origin\": \"Switzerland\",\n  \"description\": \"Updated description.\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/chocolates/5",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "chocolates", "5"]
+            }
+          }
+        },
+        {
+          "name": "Update chocolate (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"price\": 9.99,\n  \"stock\": 25\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/chocolates/5",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "chocolates", "5"]
+            }
+          }
+        },
+        {
+          "name": "Delete chocolate",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/chocolates/5",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "chocolates", "5"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Catalog",
+      "item": [
+        {
+          "name": "List brands",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/brands",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "brands"]
+            }
+          }
+        },
+        {
+          "name": "List types",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/types",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "types"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"newuser\",\n  \"password\": \"secret123\",\n  \"email\": \"newuser@chocolate.store\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/auth/register",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "Login (returns token)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"demo\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/auth/login",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Run this first, then copy the 'token' from the response into the Authorization header of the Cart/Orders/Me/Logout requests."
+          }
+        },
+        {
+          "name": "Me (paste token)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer PASTE_TOKEN_HERE" }
+            ],
+            "url": {
+              "raw": "http://localhost:3000/api/auth/me",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "auth", "me"]
+            }
+          }
+        },
+        {
+          "name": "Logout (paste token)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer PASTE_TOKEN_HERE" }
+            ],
+            "url": {
+              "raw": "http://localhost:3000/api/auth/logout",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "auth", "logout"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Cart",
+      "item": [
+        {
+          "name": "Get cart (paste token)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer PASTE_TOKEN_HERE" }
+            ],
+            "url": {
+              "raw": "http://localhost:3000/api/cart",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "cart"]
+            }
+          }
+        },
+        {
+          "name": "Add item (paste token)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer PASTE_TOKEN_HERE" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"chocolateId\": 1,\n  \"quantity\": 2\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/cart/items",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "cart", "items"]
+            }
+          }
+        },
+        {
+          "name": "Set item quantity (paste token)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer PASTE_TOKEN_HERE" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quantity\": 3\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/cart/items/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "cart", "items", "1"]
+            }
+          }
+        },
+        {
+          "name": "Remove item (paste token)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer PASTE_TOKEN_HERE" }
+            ],
+            "url": {
+              "raw": "http://localhost:3000/api/cart/items/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "cart", "items", "1"]
+            }
+          }
+        },
+        {
+          "name": "Empty cart (paste token)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer PASTE_TOKEN_HERE" }
+            ],
+            "url": {
+              "raw": "http://localhost:3000/api/cart",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "cart"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Orders",
+      "item": [
+        {
+          "name": "Checkout (paste token)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer PASTE_TOKEN_HERE" }
+            ],
+            "url": {
+              "raw": "http://localhost:3000/api/orders",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "orders"]
+            },
+            "description": "Add something to the cart first, then check out."
+          }
+        },
+        {
+          "name": "List orders (paste token)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer PASTE_TOKEN_HERE" }
+            ],
+            "url": {
+              "raw": "http://localhost:3000/api/orders",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "orders"]
+            }
+          }
+        },
+        {
+          "name": "Get order by id (paste token)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer PASTE_TOKEN_HERE" }
+            ],
+            "url": {
+              "raw": "http://localhost:3000/api/orders/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "orders", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Testing Helpers",
+      "item": [
+        {
+          "name": "Reset data",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/admin/reset",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "admin", "reset"]
+            }
+          }
+        },
+        {
+          "name": "Slow endpoint",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/slow?delay=2000",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "slow"],
+              "query": [
+                { "key": "delay", "value": "2000" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Flaky endpoint",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/flaky?failRate=0.3",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "flaky"],
+              "query": [
+                { "key": "failRate", "value": "0.3" }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

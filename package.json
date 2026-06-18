@@ -1,0 +1,21 @@
+{
+  "name": "chocolate-store-api",
+  "version": "1.0.0",
+  "description": "A simple, zero-dependency REST API for a fictional chocolate online store, built for practicing JMeter / performance engineering.",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=16"
+  },
+  "keywords": [
+    "jmeter",
+    "performance-testing",
+    "rest-api",
+    "mock-api",
+    "learning"
+  ],
+  "license": "MIT"
+}

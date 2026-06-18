@@ -1,0 +1,14 @@
+# Node
+node_modules/
+npm-debug.log*
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# JMeter run artifacts (keep the .jmx test plan, ignore generated results)
+jmeter/results/
+*.jtl
+jmeter.log

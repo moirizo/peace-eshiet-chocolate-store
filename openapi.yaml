@@ -1,0 +1,579 @@
+openapi: 3.0.3
+info:
+  title: Peace-Eshiet Chocolate Store API
+  version: 1.0.0
+  description: >
+    A small, zero-dependency REST API for a fictional online chocolate store,
+    built for practising JMeter / performance engineering.
+
+
+    **Demo login** — username: `demo`, password: `password123`.
+
+
+    Endpoints under *Cart* and *Orders* (and `auth/me`, `auth/logout`) require a
+    bearer token: log in via `POST /api/auth/login`, then send
+    `Authorization: Bearer <token>`.
+  license:
+    name: MIT
+servers:
+  - url: http://localhost:3000
+    description: Local development server
+
+tags:
+  - name: Health
+    description: Liveness and API index
+  - name: Chocolates
+    description: The chocolate catalogue (CRUD + querying)
+  - name: Catalog
+    description: Brands and types
+  - name: Auth
+    description: Register, login, current user
+  - name: Cart
+    description: Shopping cart (requires bearer token)
+  - name: Orders
+    description: Checkout and order history (requires bearer token)
+  - name: Testing Helpers
+    description: Endpoints that make performance practice easier
+
+paths:
+  /health:
+    get:
+      tags: [Health]
+      summary: Liveness check
+      responses:
+        '200':
+          description: Service is up
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string, example: ok }
+                  uptimeSeconds: { type: integer, example: 42 }
+                  timestamp: { type: string, format: date-time }
+
+  /api:
+    get:
+      tags: [Health]
+      summary: API index (self-describing list of endpoints)
+      responses:
+        '200':
+          description: A description of the available endpoints
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /api/chocolates:
+    get:
+      tags: [Chocolates]
+      summary: List chocolates
+      description: Supports pagination, filtering, text search and sorting.
+      parameters:
+        - { name: page, in: query, schema: { type: integer, default: 1 }, description: 1-based page number }
+        - { name: limit, in: query, schema: { type: integer, default: 10, maximum: 100 }, description: Items per page }
+        - { name: brand, in: query, schema: { type: string }, example: Lindt, description: Filter by exact brand }
+        - { name: type, in: query, schema: { type: string, enum: [dark, milk, white, ruby] }, example: dark }
+        - { name: origin, in: query, schema: { type: string }, example: Switzerland }
+        - { name: minPrice, in: query, schema: { type: number }, example: 3 }
+        - { name: maxPrice, in: query, schema: { type: number }, example: 8 }
+        - { name: q, in: query, schema: { type: string }, example: truffle, description: Text search across name/brand/description }
+        - { name: sort, in: query, schema: { type: string }, example: -price, description: 'Field to sort by; prefix with - for descending (name, brand, type, price, cacaoPercentage, stock, id)' }
+      responses:
+        '200':
+          description: A paginated list of chocolates
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Chocolate' }
+                  meta: { $ref: '#/components/schemas/PageMeta' }
+    post:
+      tags: [Chocolates]
+      summary: Create a chocolate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ChocolateInput' }
+            example:
+              name: Sea Salt Dark 72%
+              brand: Lindt
+              type: dark
+              cacaoPercentage: 72
+              price: 4.99
+              stock: 50
+              origin: Switzerland
+              description: Dark chocolate with a hint of sea salt.
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Chocolate' }
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/chocolates/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: integer }, example: 5 }
+    get:
+      tags: [Chocolates]
+      summary: Get a chocolate by id
+      responses:
+        '200':
+          description: One chocolate
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Chocolate' }
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+    put:
+      tags: [Chocolates]
+      summary: Replace a chocolate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ChocolateInput' }
+            example:
+              name: Excellence 70% Dark (Updated)
+              brand: Lindt
+              type: dark
+              cacaoPercentage: 70
+              price: 3.99
+              stock: 100
+              origin: Switzerland
+              description: Updated description.
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Chocolate' }
+        '404': { description: Not found, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+        '422': { description: Validation error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+    patch:
+      tags: [Chocolates]
+      summary: Partially update a chocolate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price: { type: number }
+                stock: { type: integer }
+            example:
+              price: 9.99
+              stock: 25
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Chocolate' }
+        '404': { description: Not found, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+    delete:
+      tags: [Chocolates]
+      summary: Delete a chocolate
+      responses:
+        '200':
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  deleted: { $ref: '#/components/schemas/Chocolate' }
+        '404': { description: Not found, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+
+  /api/brands:
+    get:
+      tags: [Catalog]
+      summary: List brands with product counts
+      responses:
+        '200':
+          description: Brands
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name: { type: string, example: Lindt }
+                        productCount: { type: integer, example: 5 }
+
+  /api/types:
+    get:
+      tags: [Catalog]
+      summary: List chocolate types with product counts
+      responses:
+        '200':
+          description: Types
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name: { type: string, example: dark }
+                        productCount: { type: integer, example: 10 }
+
+  /api/auth/register:
+    post:
+      tags: [Auth]
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [username, password]
+              properties:
+                username: { type: string }
+                password: { type: string }
+                email: { type: string }
+            example:
+              username: newuser
+              password: secret123
+              email: newuser@chocolate.store
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+        '409': { description: Username taken, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+        '422': { description: Validation error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+
+  /api/auth/login:
+    post:
+      tags: [Auth]
+      summary: Log in and receive a bearer token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [username, password]
+              properties:
+                username: { type: string }
+                password: { type: string }
+            example:
+              username: demo
+              password: password123
+      responses:
+        '200':
+          description: Authenticated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token: { type: string, example: 6636145e8fbc0d785510eff4a57b1a2b }
+                  user: { $ref: '#/components/schemas/User' }
+        '401': { description: Invalid credentials, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+
+  /api/auth/me:
+    get:
+      tags: [Auth]
+      summary: Get the current user
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Current user
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+        '401': { description: Unauthorized, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+
+  /api/auth/logout:
+    post:
+      tags: [Auth]
+      summary: Invalidate the current token
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Logged out
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string, example: Logged out }
+        '401': { description: Unauthorized, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+
+  /api/cart:
+    get:
+      tags: [Cart]
+      summary: Get the current cart
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: The cart, content: { application/json: { schema: { $ref: '#/components/schemas/Cart' } } } }
+        '401': { description: Unauthorized, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+    delete:
+      tags: [Cart]
+      summary: Empty the cart
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: The emptied cart, content: { application/json: { schema: { $ref: '#/components/schemas/Cart' } } } }
+        '401': { description: Unauthorized, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+
+  /api/cart/items:
+    post:
+      tags: [Cart]
+      summary: Add an item to the cart
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [chocolateId]
+              properties:
+                chocolateId: { type: integer }
+                quantity: { type: integer, default: 1 }
+            example:
+              chocolateId: 1
+              quantity: 2
+      responses:
+        '201': { description: Updated cart, content: { application/json: { schema: { $ref: '#/components/schemas/Cart' } } } }
+        '404': { description: Chocolate not found, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+        '422': { description: Validation error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+
+  /api/cart/items/{chocolateId}:
+    parameters:
+      - { name: chocolateId, in: path, required: true, schema: { type: integer }, example: 1 }
+    put:
+      tags: [Cart]
+      summary: Set the quantity of a cart item
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [quantity]
+              properties:
+                quantity: { type: integer, description: Set to 0 to remove the item }
+            example:
+              quantity: 3
+      responses:
+        '200': { description: Updated cart, content: { application/json: { schema: { $ref: '#/components/schemas/Cart' } } } }
+        '404': { description: Item not in cart, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+    delete:
+      tags: [Cart]
+      summary: Remove an item from the cart
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Updated cart, content: { application/json: { schema: { $ref: '#/components/schemas/Cart' } } } }
+        '404': { description: Item not in cart, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+
+  /api/orders:
+    post:
+      tags: [Orders]
+      summary: Check out the current cart
+      security: [{ bearerAuth: [] }]
+      responses:
+        '201': { description: The created order, content: { application/json: { schema: { $ref: '#/components/schemas/Order' } } } }
+        '422': { description: Empty cart, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+    get:
+      tags: [Orders]
+      summary: List the current user's orders
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Orders
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Order' }
+                  meta:
+                    type: object
+                    properties:
+                      total: { type: integer }
+
+  /api/orders/{id}:
+    get:
+      tags: [Orders]
+      summary: Get one order by id
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer }, example: 1 }
+      responses:
+        '200': { description: The order, content: { application/json: { schema: { $ref: '#/components/schemas/Order' } } } }
+        '404': { description: Not found, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+
+  /api/admin/reset:
+    post:
+      tags: [Testing Helpers]
+      summary: Reset all data back to the seed catalogue
+      responses:
+        '200':
+          description: Reset done
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string, example: Store reset to seed data }
+                  chocolates: { type: integer, example: 39 }
+
+  /api/slow:
+    get:
+      tags: [Testing Helpers]
+      summary: Respond after an artificial delay
+      parameters:
+        - { name: delay, in: query, schema: { type: integer, default: 1000, maximum: 10000 }, example: 2000, description: Delay in milliseconds (capped at 10000) }
+      responses:
+        '200':
+          description: Delayed response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string }
+                  delayMs: { type: integer }
+
+  /api/flaky:
+    get:
+      tags: [Testing Helpers]
+      summary: Randomly return 500 to practise error handling
+      parameters:
+        - { name: failRate, in: query, schema: { type: number, default: 0.3, minimum: 0, maximum: 1 }, example: 0.3, description: Probability of failure (0..1) }
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string, example: Success }
+                  failRate: { type: number }
+        '500':
+          description: Simulated failure
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: 'Paste the token returned by POST /api/auth/login.'
+
+  schemas:
+    Chocolate:
+      type: object
+      properties:
+        id: { type: integer, example: 1 }
+        name: { type: string, example: Excellence 70% Dark }
+        brand: { type: string, example: Lindt }
+        type: { type: string, enum: [dark, milk, white, ruby], example: dark }
+        cacaoPercentage: { type: integer, example: 70 }
+        price: { type: number, example: 3.49 }
+        stock: { type: integer, example: 120 }
+        origin: { type: string, example: Switzerland }
+        sku: { type: string, example: LIND-0001 }
+        description: { type: string }
+
+    ChocolateInput:
+      type: object
+      required: [name, brand, type, price]
+      properties:
+        name: { type: string }
+        brand: { type: string }
+        type: { type: string, enum: [dark, milk, white, ruby] }
+        cacaoPercentage: { type: integer }
+        price: { type: number }
+        stock: { type: integer }
+        origin: { type: string }
+        description: { type: string }
+
+    PageMeta:
+      type: object
+      properties:
+        page: { type: integer, example: 1 }
+        limit: { type: integer, example: 10 }
+        total: { type: integer, example: 39 }
+        totalPages: { type: integer, example: 3 }
+        hasNextPage: { type: boolean, example: true }
+        hasPrevPage: { type: boolean, example: false }
+
+    User:
+      type: object
+      properties:
+        id: { type: integer, example: 1 }
+        username: { type: string, example: demo }
+        email: { type: string, example: demo@chocolate.store }
+
+    CartItem:
+      type: object
+      properties:
+        chocolateId: { type: integer, example: 1 }
+        name: { type: string, example: Excellence 70% Dark }
+        brand: { type: string, example: Lindt }
+        unitPrice: { type: number, example: 3.49 }
+        quantity: { type: integer, example: 2 }
+        lineTotal: { type: number, example: 6.98 }
+
+    Cart:
+      type: object
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/CartItem' }
+        itemCount: { type: integer, example: 2 }
+        total: { type: number, example: 6.98 }
+
+    Order:
+      type: object
+      properties:
+        id: { type: integer, example: 1 }
+        userId: { type: integer, example: 1 }
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/CartItem' }
+        itemCount: { type: integer, example: 3 }
+        total: { type: number, example: 13.47 }
+        status: { type: string, example: confirmed }
+        createdAt: { type: string, format: date-time }
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            status: { type: integer, example: 404 }
+            message: { type: string, example: Chocolate 9999 not found }
